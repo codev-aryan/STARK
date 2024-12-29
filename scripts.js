@@ -1,3 +1,59 @@
+// Thought Management
+const thoughtContainer = document.querySelector('.thought-container');
+const currentThought = document.getElementById('current-thought');
+const dropdownArrow = document.querySelector('.dropdown-arrow');
+const thoughtDropdown = document.querySelector('.thought-dropdown');
+const thoughtOptions = document.querySelectorAll('.thought-option');
+
+// Toggle dropdown
+dropdownArrow.addEventListener('click', () => {
+    thoughtDropdown.classList.toggle('show');
+});
+
+// Close dropdown when clicking outside
+document.addEventListener('click', (e) => {
+    if (!thoughtContainer.contains(e.target)) {
+        thoughtDropdown.classList.remove('show');
+    }
+});
+
+// Handle thought selection
+thoughtOptions.forEach(option => {
+    option.addEventListener('click', () => {
+        if (option.id === 'custom-thought') {
+            showCustomThoughtPopup();
+        } else {
+            currentThought.textContent = option.getAttribute('data-thought');
+            thoughtDropdown.classList.remove('show');
+        }
+    });
+});
+
+function showCustomThoughtPopup() {
+    const popup = document.createElement("div");
+    popup.classList.add("popup");
+    popup.innerHTML = `
+        <div class="popup-content">
+            <h2>Custom Thought</h2>
+            <p>Enter your motivational thought:</p>
+            <input type="text" id="custom-thought-input" placeholder="Enter your thought">
+            <button onclick="saveCustomThought()">Save</button>
+            <button onclick="closePopup()">Cancel</button>
+        </div>
+    `;
+    document.body.appendChild(popup);
+}
+
+function saveCustomThought() {
+    const customInput = document.getElementById('custom-thought-input');
+    if (customInput.value.trim()) {
+        currentThought.textContent = customInput.value;
+        closePopup();
+        thoughtDropdown.classList.remove('show');
+    }
+}
+
+
 // To-Do List Functionality
 const todoForm = document.getElementById("todo-form");
 const todoInput = document.getElementById("todo-input");
@@ -26,6 +82,7 @@ function displayTodos() {
             todo.completed = !todo.completed;
             localStorage.setItem("todos", JSON.stringify(todos));
             displayTodos();
+            updateProgress();   
             if (todo.completed) {
                 showCongratsPopup();
             }
@@ -39,6 +96,7 @@ function displayTodos() {
             todos.splice(index, 1);
             localStorage.setItem("todos", JSON.stringify(todos));
             displayTodos();
+            updateProgress();
         });
 
         controls.appendChild(tickButton);
@@ -58,6 +116,7 @@ todoForm.addEventListener("submit", (e) => {
         localStorage.setItem("todos", JSON.stringify(todos));
         displayTodos();
         todoInput.value = ""; // Clear input
+        updateProgress();
     }
 });
 
