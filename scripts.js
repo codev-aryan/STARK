@@ -36,7 +36,7 @@ function showCustomThoughtPopup() {
         <div class="popup-content">
             <h2>Custom Thought</h2>
             <p>Enter your motivational thought:</p>
-            <input type="text" id="custom-thought-input" placeholder="Enter your thought">
+            <input type="text" id="custom-thought-input" maxlength="40" placeholder="Enter your thought">
             <button onclick="saveCustomThought()">Save</button>
             <button onclick="closePopup()">Cancel</button>
         </div>
@@ -82,7 +82,7 @@ function displayTodos() {
             todo.completed = !todo.completed;
             localStorage.setItem("todos", JSON.stringify(todos));
             displayTodos();
-            updateProgress();   
+            updateProgress();
             if (todo.completed) {
                 showCongratsPopup();
             }
@@ -147,10 +147,12 @@ startTimerButton.addEventListener("click", function () {
     if (!isRunning) {
         isRunning = true;
         startTimerButton.textContent = "Stop Timer";
+        startTimerButton.classList.add('stop'); // Add stop class
         startTimer();
     } else {
         isRunning = false;
         startTimerButton.textContent = "Start Timer";
+        startTimerButton.classList.remove('stop'); // Remove stop class
         stopTimer();
     }
 });
@@ -185,7 +187,7 @@ function showSessionPopup() {
         <div class="popup-content">
             <h2>Session Log</h2>
             <p>Which task does this session belong to?</p>
-            <input type="text" id="session-task-name" placeholder="Enter task name">
+            <input type="text" id="session-task-name" maxlength="30" placeholder="Enter task name">
             <button onclick="saveSessionLog()">Save</button>
             <button onclick="closePopup()">Close</button>
         </div>
