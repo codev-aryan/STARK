@@ -588,7 +588,7 @@ li button {
     color: #a7a7a7;
     text-align: right;
     padding: 10px 20px;
-    font-size: 3rem;        
+    font-size: 3rem;
     margin-bottom: 15px;
     border-radius: 4px;
 }
@@ -680,6 +680,26 @@ button.dark-mode {
     transform: scale(1.05);
 }
 
+#christmas-theme-toggle {
+    position: fixed;
+    top: 80px;
+    /* Adjust this value to position the button below the Light/Dark Mode button */
+    right: 20px;
+    padding: 10px 20px;
+    border-radius: 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    background-color: #007bff;
+    color: white;
+}
+
+#christmas-theme-toggle:hover {
+    transform: scale(1.05);
+}
+
 /* Dark Theme Classes */
 body.dark-mode {
     background-color: #1a1a1a;
@@ -695,7 +715,8 @@ header.dark-mode {
     box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
 }
 
-input.dark-mode, textarea.dark-mode {
+input.dark-mode,
+textarea.dark-mode {
     background-color: #3d3d3d;
     color: #ffffff;
     border-color: #4d4d4d;
@@ -808,7 +829,7 @@ li.dark-mode {
 
 #add-edit-popup .popup-content {
     width: 70%;
-    max-width: 600px; 
+    max-width: 600px;
     padding: 50px;
     margin: 1px auto;
 }
@@ -823,7 +844,8 @@ li.dark-mode {
 }
 
 #note-content-input {
-    min-height: 250px; /* Increased height */
+    min-height: 250px;
+    /* Increased height */
 }
 
 /* Responsive adjustments */
