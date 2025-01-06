@@ -2,6 +2,42 @@
 
 STARK is a comprehensive web-based student productivity tool designed to help students manage their academic life more effectively. It combines task management, study timing, note-taking, and motivational features in a clean, user-friendly interface.
 
+## 📸 Screenshots
+
+### Main Interface
+![Main Interface - Light Mode](images/1.png)
+*Main dashboard in light mode showing the primary interface*
+
+![Main Interface - Dark Mode](images/2.png)
+*Main dashboard in dark mode for comfortable night-time usage*
+
+### Extended View
+![Scrolled View - Dark Mode](images/3.png)
+*Scrolled down view in dark mode showing additional features*
+
+![Scrolled View - Light Mode](images/4.png)
+*Scrolled down view in light mode displaying extended functionality*
+
+### Features in Action
+![Notes Interface](images/5.png)
+*Task completition*
+
+![Task Management](images/6.png)
+*Notes add/edit interface*
+
+![Additional Features 1](images/7.png)
+*Notes preview interface
+
+![Additional Features 2](images/8.png)
+*More features and interactions*
+
+### Special Themes
+![Christmas Theme 1](images/9.png)
+*Special Christmas theme with festive colors*
+
+![Christmas Theme 2](images/10.png)
+*Additional Christmas theme elements*
+
 ## 🌟 Theme Interpretation: "Empowering Student Success Through Technology"
 
 STARK addresses the common challenges students face in managing their academic responsibilities by providing:
