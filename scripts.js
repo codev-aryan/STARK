@@ -1,9 +1,14 @@
+document.addEventListener("DOMContentLoaded", () => {
 // Thought Management
 const thoughtContainer = document.querySelector('.thought-container');
 const currentThought = document.getElementById('current-thought');
 const dropdownArrow = document.querySelector('.dropdown-arrow');
 const thoughtDropdown = document.querySelector('.thought-dropdown');
 const thoughtOptions = document.querySelectorAll('.thought-option');
+
+//Theme toggle functionality
+let isDarkMode = localStorage.getItem('darkMode') === 'true';
+let isChristmasMode = localStorage.getItem('christmasMode') === 'true';
 
 // Toggle dropdown
 dropdownArrow.addEventListener('click', () => {
@@ -570,8 +575,7 @@ function calculateResult() {
 // Theme Toggle Functionality
 const themeToggle = document.getElementById('theme-toggle');
 const christmasThemeToggle = document.getElementById('christmas-theme-toggle');
-let isDarkMode = localStorage.getItem('darkMode') === 'true';
-let isChristmasMode = localStorage.getItem('christmasMode') === 'true';
+
 
 // Initialize theme
 function updateTheme() {
@@ -670,4 +674,5 @@ const observer = new MutationObserver(() => {
 observer.observe(document.body, {
     childList: true,
     subtree: true
+});
 });
