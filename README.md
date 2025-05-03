@@ -64,8 +64,8 @@ STARK addresses the common challenges students face in managing their academic r
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/stark-student-helper.git
-cd stark-student-helper
+git clone https://github.com/cipherex/stark.git
+cd stark
 ```
 
 2. Open the project:
