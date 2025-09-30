@@ -1,4 +1,4 @@
-// Define global functions that are called from HTML
+// Define global variables
 let currentNoteIndex = null;
 let noteToDelete = null;
 let notes = [];
@@ -10,16 +10,31 @@ let isRunning = false;
 let isDarkMode = localStorage.getItem('darkMode') === 'true';
 let isChristmasMode = localStorage.getItem('christmasMode') === 'true';
 
-// Make functions globally accessible
+// Global function to safely get element
+function safeGetElement(id) {
+    const element = document.getElementById(id);
+    if (!element) {
+        console.warn(`Element with id '${id}' not found`);
+    }
+    return element;
+}
+
+// Global function to save custom thought
 window.saveCustomThought = function() {
-    const customInput = document.getElementById('custom-thought-input');
-    if (customInput.value.trim()) {
-        document.getElementById('current-thought').textContent = customInput.value;
+    const customInput = safeGetElement('custom-thought-input');
+    const currentThought = safeGetElement('current-thought');
+    const thoughtDropdown = document.querySelector('.thought-dropdown');
+    
+    if (customInput && customInput.value.trim() && currentThought) {
+        currentThought.textContent = customInput.value;
         closePopup();
-        document.querySelector('.thought-dropdown').classList.remove('show');
+        if (thoughtDropdown) {
+            thoughtDropdown.classList.remove('show');
+        }
     }
 };
 
+// Global function to close popup
 window.closePopup = function() {
     const popup = document.querySelector(".popup");
     if (popup) {
@@ -27,29 +42,54 @@ window.closePopup = function() {
     }
 };
 
+// Global function to edit note
 window.editNote = function(index) {
     currentNoteIndex = index;
     openAddEditPopup(true);
 };
 
+// Global function to delete note
 window.deleteNote = function(index) {
     noteToDelete = index;
-    const deletePopup = document.getElementById('delete-confirm-popup');
-    const deleteMessage = isChristmasMode ? "Ho Ho Ho! Should we delete this naughty list?" : "Are you sure you want to delete this note?";
-    deletePopup.querySelector('p').textContent = deleteMessage;
-    deletePopup.classList.add('show');
-    document.querySelector('.overlay').classList.add('active');
+    const deletePopup = safeGetElement('delete-confirm-popup');
+    const overlay = document.querySelector('.overlay');
+    
+    if (deletePopup) {
+        const deleteMessage = isChristmasMode ? 
+            "Ho Ho Ho! Should we delete this naughty list?" : 
+            "Are you sure you want to delete this note?";
+        const messagePara = deletePopup.querySelector('p');
+        if (messagePara) {
+            messagePara.textContent = deleteMessage;
+        }
+        deletePopup.classList.add('show');
+    }
+    
+    if (overlay) {
+        overlay.classList.add('active');
+    }
 };
 
+// Global function to close delete popup
 window.closeDeletePopup = function() {
-    const deletePopup = document.getElementById('delete-confirm-popup');
-    deletePopup.classList.remove('show');
-    document.querySelector('.overlay').classList.remove('active');
+    const deletePopup = safeGetElement('delete-confirm-popup');
+    const overlay = document.querySelector('.overlay');
+    
+    if (deletePopup) {
+        deletePopup.classList.remove('show');
+    }
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
     noteToDelete = null;
 };
 
+// Global function to save session log
 window.saveSessionLog = function() {
-    const taskName = document.getElementById("session-task-name").value.trim();
+    const taskNameInput = safeGetElement("session-task-name");
+    if (!taskNameInput) return;
+    
+    const taskName = taskNameInput.value.trim();
     if (taskName) {
         const log = {
             task: taskName,
@@ -64,6 +104,7 @@ window.saveSessionLog = function() {
     resetTimer();
 };
 
+// Global function to close congrats popup
 window.closeCongratsPopup = function() {
     const congratsPopup = document.querySelector(".popup");
     if (congratsPopup) {
@@ -84,12 +125,12 @@ function pad(num) {
 
 function resetTimer() {
     seconds = 0;
-    const timerDisplay = document.getElementById("timer-display");
+    const timerDisplay = safeGetElement("timer-display");
     if (timerDisplay) {
         timerDisplay.textContent = "00:00";
     }
     isRunning = false;
-    const startTimerButton = document.getElementById("start-timer");
+    const startTimerButton = safeGetElement("start-timer");
     if (startTimerButton) {
         startTimerButton.textContent = "Start Timer";
         startTimerButton.classList.remove('stop');
@@ -97,74 +138,59 @@ function resetTimer() {
 }
 
 function openAddEditPopup(isEdit = false) {
-    const popupHeader = document.getElementById("popup-header");
-    const addEditPopup = document.getElementById("add-edit-popup");
+    const popupHeader = safeGetElement("popup-header");
+    const addEditPopup = safeGetElement("add-edit-popup");
     const overlay = document.querySelector(".overlay");
+    const noteTitleInput = safeGetElement("note-title-input");
+    const noteContentInput = safeGetElement("note-content-input");
     
     if (addEditPopup) addEditPopup.classList.add("show");
     if (overlay) overlay.classList.add("active");
 
-    if (isEdit && currentNoteIndex !== null) {
-        popupHeader.textContent = "Edit Note";
-        document.getElementById("note-title-input").value = notes[currentNoteIndex].title;
-        document.getElementById("note-content-input").value = notes[currentNoteIndex].content;
+    if (popupHeader) {
+        popupHeader.textContent = isEdit ? "Edit Note" : "Add Note";
+    }
+
+    if (isEdit && currentNoteIndex !== null && notes[currentNoteIndex]) {
+        if (noteTitleInput) noteTitleInput.value = notes[currentNoteIndex].title || "";
+        if (noteContentInput) noteContentInput.value = notes[currentNoteIndex].content || "";
     } else {
-        popupHeader.textContent = "Add Note";
-        document.getElementById("note-title-input").value = "";
-        document.getElementById("note-content-input").value = "";
+        if (noteTitleInput) noteTitleInput.value = "";
+        if (noteContentInput) noteContentInput.value = "";
     }
 }
 
+// Wait for DOM to be fully loaded
 document.addEventListener("DOMContentLoaded", () => {
     // Load data from localStorage with error handling
     try {
         notes = JSON.parse(localStorage.getItem("notes")) || [];
+        if (!Array.isArray(notes)) notes = [];
     } catch (e) {
+        console.error("Error loading notes:", e);
         notes = [];
         localStorage.removeItem("notes");
     }
 
     try {
         todos = JSON.parse(localStorage.getItem("todos")) || [];
+        if (!Array.isArray(todos)) todos = [];
     } catch (e) {
+        console.error("Error loading todos:", e);
         todos = [];
         localStorage.removeItem("todos");
     }
 
     try {
         timerLogs = JSON.parse(localStorage.getItem("timerLogs")) || [];
+        if (!Array.isArray(timerLogs)) timerLogs = [];
     } catch (e) {
+        console.error("Error loading timer logs:", e);
         timerLogs = [];
         localStorage.removeItem("timerLogs");
     }
 
-    // DOM Elements
-    const thoughtContainer = document.querySelector('.thought-container');
-    const currentThought = document.getElementById('current-thought');
-    const dropdownArrow = document.querySelector('.dropdown-arrow');
-    const thoughtDropdown = document.querySelector('.thought-dropdown');
-    const thoughtOptions = document.querySelectorAll('.thought-option');
-    const notesContainer = document.getElementById("notes-container");
-    const addNoteBtn = document.getElementById("add-note-btn");
-    const addEditPopup = document.getElementById("add-edit-popup");
-    const saveNoteBtn = document.getElementById("save-note-btn");
-    const cancelAddBtn = document.getElementById("cancel-add-btn");
-    const noteTitleInput = document.getElementById("note-title-input");
-    const noteContentInput = document.getElementById("note-content-input");
-    const viewPopup = document.getElementById("view-popup");
-    const viewPopupTitle = document.getElementById("view-popup-title");
-    const viewPopupContent = document.getElementById("view-popup-content");
-    const closeViewPopupBtn = document.getElementById("close-view-popup-btn");
-    const todoForm = document.getElementById("todo-form");
-    const todoInput = document.getElementById("todo-input");
-    const todoList = document.getElementById("todo-list");
-    const timerDisplay = document.getElementById("timer-display");
-    const startTimerButton = document.getElementById("start-timer");
-    const logsContainer = document.getElementById("timer-logs");
-    const themeToggle = document.getElementById('theme-toggle');
-    const christmasThemeToggle = document.getElementById('christmas-theme-toggle');
-    
-    // Create background overlay for popups if not exists
+    // Create overlay if it doesn't exist
     let overlay = document.querySelector(".overlay");
     if (!overlay) {
         overlay = document.createElement("div");
@@ -172,31 +198,57 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.appendChild(overlay);
     }
 
+    // Cache DOM elements
+    const thoughtContainer = document.querySelector('.thought-container');
+    const currentThought = safeGetElement('current-thought');
+    const dropdownArrow = document.querySelector('.dropdown-arrow');
+    const thoughtDropdown = document.querySelector('.thought-dropdown');
+    const thoughtOptions = document.querySelectorAll('.thought-option');
+    const notesContainer = safeGetElement("notes-container");
+    const addNoteBtn = safeGetElement("add-note-btn");
+    const addEditPopup = safeGetElement("add-edit-popup");
+    const saveNoteBtn = safeGetElement("save-note-btn");
+    const cancelAddBtn = safeGetElement("cancel-add-btn");
+    const noteTitleInput = safeGetElement("note-title-input");
+    const noteContentInput = safeGetElement("note-content-input");
+    const viewPopup = safeGetElement("view-popup");
+    const viewPopupTitle = safeGetElement("view-popup-title");
+    const viewPopupContent = safeGetElement("view-popup-content");
+    const closeViewPopupBtn = safeGetElement("close-view-popup-btn");
+    const todoForm = safeGetElement("todo-form");
+    const todoInput = safeGetElement("todo-input");
+    const todoList = safeGetElement("todo-list");
+    const timerDisplay = safeGetElement("timer-display");
+    const startTimerButton = safeGetElement("start-timer");
+    const logsContainer = safeGetElement("timer-logs");
+    const themeToggle = safeGetElement('theme-toggle');
+    const christmasThemeToggle = safeGetElement('christmas-theme-toggle');
+
     // Toggle dropdown
-    if (dropdownArrow) {
-        dropdownArrow.addEventListener('click', () => {
+    if (dropdownArrow && thoughtDropdown) {
+        dropdownArrow.addEventListener('click', (e) => {
+            e.stopPropagation();
             thoughtDropdown.classList.toggle('show');
         });
     }
 
     // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
-        if (thoughtContainer && !thoughtContainer.contains(e.target)) {
-            if (thoughtDropdown) {
-                thoughtDropdown.classList.remove('show');
-            }
+        if (thoughtContainer && !thoughtContainer.contains(e.target) && thoughtDropdown) {
+            thoughtDropdown.classList.remove('show');
         }
     });
 
     // Handle thought selection
-    if (thoughtOptions) {
+    if (thoughtOptions && thoughtOptions.length > 0) {
         thoughtOptions.forEach(option => {
             option.addEventListener('click', () => {
                 if (option.id === 'custom-thought') {
                     showCustomThoughtPopup();
                 } else {
-                    if (currentThought) {
-                        currentThought.textContent = option.getAttribute('data-thought');
+                    const thought = option.getAttribute('data-thought');
+                    if (currentThought && thought) {
+                        currentThought.textContent = thought;
                     }
                     if (thoughtDropdown) {
                         thoughtDropdown.classList.remove('show');
@@ -225,12 +277,14 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!notesContainer) return;
         
         notesContainer.innerHTML = "";
-        if (notes.length === 0) {
+        if (!notes || notes.length === 0) {
             notesContainer.innerHTML = '<div class="no-notes">No notes yet. Click "Add Note" to create one.</div>';
             return;
         }
 
         notes.forEach((note, index) => {
+            if (!note || !note.title) return;
+            
             const noteCard = document.createElement("div");
             noteCard.classList.add("note-card");
 
@@ -266,10 +320,8 @@ document.addEventListener("DOMContentLoaded", () => {
     function closeAddEditPopup() {
         if (addEditPopup) addEditPopup.classList.remove("show");
         if (overlay) overlay.classList.remove("active");
-        if (noteTitleInput && noteContentInput) {
-            noteTitleInput.value = "";
-            noteContentInput.value = "";
-        }
+        if (noteTitleInput) noteTitleInput.value = "";
+        if (noteContentInput) noteContentInput.value = "";
     }
 
     function saveNote() {
@@ -285,27 +337,34 @@ document.addEventListener("DOMContentLoaded", () => {
                 timestamp: new Date().toLocaleString()
             };
 
-            if (currentNoteIndex !== null) {
+            if (currentNoteIndex !== null && currentNoteIndex < notes.length) {
                 notes[currentNoteIndex] = note;
             } else {
                 notes.push(note);
             }
 
-            localStorage.setItem('notes', JSON.stringify(notes));
+            try {
+                localStorage.setItem('notes', JSON.stringify(notes));
+            } catch (e) {
+                console.error("Error saving notes:", e);
+            }
+            
             closeAddEditPopup();
             renderNotes();
         }
     }
 
     function openViewPopup(index) {
-        if (!viewPopup || !viewPopupTitle || !viewPopupContent) return;
+        if (!viewPopup || !notes[index]) return;
         
         currentNoteIndex = index;
         viewPopup.classList.add("show");
         if (overlay) overlay.classList.add("active");
-        viewPopupTitle.textContent = notes[index].title;
-        viewPopupContent.textContent = notes[index].content;
-        const timestampElement = document.getElementById("view-popup-timestamp");
+        
+        if (viewPopupTitle) viewPopupTitle.textContent = notes[index].title || "";
+        if (viewPopupContent) viewPopupContent.textContent = notes[index].content || "";
+        
+        const timestampElement = safeGetElement("view-popup-timestamp");
         if (timestampElement) {
             timestampElement.textContent = notes[index].timestamp || 'No timestamp available';
         }
@@ -321,7 +380,15 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!todoList) return;
         
         todoList.innerHTML = "";
+        
+        if (!todos || todos.length === 0) {
+            updateProgress();
+            return;
+        }
+
         todos.forEach((todo, index) => {
+            if (!todo || !todo.name) return;
+            
             const li = document.createElement("li");
             li.textContent = todo.name;
 
@@ -337,7 +404,11 @@ document.addEventListener("DOMContentLoaded", () => {
             tickButton.classList.add(todo.completed ? "delete-button" : "tick-button");
             tickButton.addEventListener("click", () => {
                 todo.completed = !todo.completed;
-                localStorage.setItem("todos", JSON.stringify(todos));
+                try {
+                    localStorage.setItem("todos", JSON.stringify(todos));
+                } catch (e) {
+                    console.error("Error saving todos:", e);
+                }
                 displayTodos();
                 updateProgress();
                 if (todo.completed) {
@@ -350,7 +421,11 @@ document.addEventListener("DOMContentLoaded", () => {
             deleteButton.classList.add("delete-button");
             deleteButton.addEventListener("click", () => {
                 todos.splice(index, 1);
-                localStorage.setItem("todos", JSON.stringify(todos));
+                try {
+                    localStorage.setItem("todos", JSON.stringify(todos));
+                } catch (e) {
+                    console.error("Error saving todos:", e);
+                }
                 displayTodos();
                 updateProgress();
             });
@@ -363,13 +438,17 @@ document.addEventListener("DOMContentLoaded", () => {
         updateProgress();
     }
 
-    if (todoForm) {
+    if (todoForm && todoInput) {
         todoForm.addEventListener("submit", (e) => {
             e.preventDefault();
             const newTask = todoInput.value.trim();
             if (newTask) {
                 todos.push({ name: newTask, completed: false });
-                localStorage.setItem("todos", JSON.stringify(todos));
+                try {
+                    localStorage.setItem("todos", JSON.stringify(todos));
+                } catch (e) {
+                    console.error("Error saving todos:", e);
+                }
                 displayTodos();
                 todoInput.value = "";
                 updateProgress();
@@ -378,11 +457,11 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     function updateProgress() {
-        const progressBar = document.getElementById('todo-progress');
+        const progressBar = safeGetElement('todo-progress');
         if (!progressBar) return;
         
-        const totalTasks = todos.length;
-        const completedTasks = todos.filter(todo => todo.completed).length;
+        const totalTasks = todos ? todos.length : 0;
+        const completedTasks = todos ? todos.filter(todo => todo && todo.completed).length : 0;
         const progressPercent = totalTasks === 0 ? 0 : (completedTasks / totalTasks) * 100;
         progressBar.style.width = `${progressPercent}%`;
     }
@@ -390,7 +469,9 @@ document.addEventListener("DOMContentLoaded", () => {
     function showCongratsPopup() {
         const congratsPopup = document.createElement("div");
         congratsPopup.classList.add("popup");
-        const congratsMessage = isChristmasMode ? "Ho Ho Ho! You deserve presents now!" : "Congratulations! You completed a task successfully!";
+        const congratsMessage = isChristmasMode ? 
+            "Ho Ho Ho! You deserve presents now!" : 
+            "Congratulations! You completed a task successfully!";
         congratsPopup.innerHTML = `
             <div class="popup-content">
                 <h2>${congratsMessage}</h2>
@@ -439,13 +520,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (timerDisplay) timerDisplay.textContent = "00:00";
         if (seconds >= 5) {
             showSessionPopup();
+        } else {
+            resetTimer();
         }
     }
 
     function showSessionPopup() {
         const popup = document.createElement("div");
         popup.classList.add("popup");
-        const sessionMessage = isChristmasMode ? "Ho Ho Ho! Which gift you packed now?" : "Which task does this session belong to?";
+        const sessionMessage = isChristmasMode ? 
+            "Ho Ho Ho! Which gift you packed now?" : 
+            "Which task does this session belong to?";
         popup.innerHTML = `
             <div class="popup-content">
                 <h2>Session Log</h2>
@@ -462,12 +547,17 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!logsContainer) return;
         
         logsContainer.innerHTML = "";
+        
+        if (!timerLogs || timerLogs.length === 0) return;
+
         timerLogs.forEach((log, index) => {
+            if (!log) return;
+            
             const logEntry = document.createElement("div");
             logEntry.classList.add("log-entry");
 
             const logText = document.createElement("span");
-            logText.textContent = `[${log.timestamp}] Task: ${log.task} | ${log.duration}`;
+            logText.textContent = `[${log.timestamp || 'N/A'}] Task: ${log.task || 'Unnamed'} | ${log.duration || '0 min 0 sec'}`;
             logEntry.appendChild(logText);
 
             const deleteButton = document.createElement("button");
@@ -475,7 +565,11 @@ document.addEventListener("DOMContentLoaded", () => {
             deleteButton.classList.add("log-delete");
             deleteButton.addEventListener("click", () => {
                 timerLogs.splice(index, 1);
-                localStorage.setItem("timerLogs", JSON.stringify(timerLogs));
+                try {
+                    localStorage.setItem("timerLogs", JSON.stringify(timerLogs));
+                } catch (e) {
+                    console.error("Error saving timer logs:", e);
+                }
                 displayTimerLogs();
             });
 
@@ -584,44 +678,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Theme Toggle Functionality
     function updateTheme() {
-        const elements = {
-            body: document.body,
-            header: document.querySelector('header'),
-            sections: document.querySelectorAll('.section'),
-            inputs: document.querySelectorAll('input, textarea'),
-            buttons: document.querySelectorAll('button'),
-            noteCards: document.querySelectorAll('.note-card'),
-            popups: document.querySelectorAll('.popup-content'),
-            calculator: document.querySelector('.calculator'),
-            calculatorScreen: document.querySelector('.calculator-screen'),
-            calculatorButtons: document.querySelectorAll('.calculator-keys button'),
-            thoughtContainer: document.querySelector('.thought-container'),
-            todoSection: document.getElementById('todo-section'),
-            todoList: document.querySelectorAll('li'),
-            notesSection: document.getElementById('notes-section'),
-            motivationSection: document.querySelector('.thought-container'),
-            dropdownContent: document.querySelector('.thought-dropdown'),
-            currentThought: document.getElementById('current-thought'),
-            logEntries: document.querySelectorAll('.log-entry'),
-            timerSection: document.getElementById('timer-section'),
-            timerLogs: document.getElementById('timer-logs'),
-            thoughtOptions: document.querySelectorAll('.thought-option')
-        };
-
         const christmasStylesheet = document.querySelector('link[href="christmas-styles.css"]');
         
+        // Get all elements that need theme updates
+        const elementsToTheme = [
+            document.body,
+            document.querySelector('header'),
+            ...document.querySelectorAll('.section'),
+            ...document.querySelectorAll('input, textarea'),
+            ...document.querySelectorAll('button'),
+            ...document.querySelectorAll('.note-card'),
+            ...document.querySelectorAll('.popup-content'),
+            document.querySelector('.calculator'),
+            document.querySelector('.calculator-screen'),
+            ...document.querySelectorAll('.calculator-keys button'),
+            document.querySelector('.thought-container'),
+            ...document.querySelectorAll('li'),
+            document.querySelector('.thought-dropdown'),
+            ...document.querySelectorAll('.log-entry'),
+            ...document.querySelectorAll('.thought-option')
+        ].filter(el => el !== null);
+
         if (isChristmasMode) {
             if (themeToggle) themeToggle.textContent = '🌙 Dark Mode';
             if (christmasThemeToggle) christmasThemeToggle.textContent = '🎄 Christmas Mode On';
             
-            Object.values(elements).forEach(elementOrNodeList => {
-                if (!elementOrNodeList) return;
-                if (elementOrNodeList instanceof NodeList) {
-                    elementOrNodeList.forEach(el => el && el.classList.remove('dark-mode'));
-                } else {
-                    elementOrNodeList.classList.remove('dark-mode');
-                }
-            });
+            elementsToTheme.forEach(el => el.classList.remove('dark-mode'));
             
             if (christmasStylesheet) christmasStylesheet.disabled = false;
             document.body.classList.add('christmas-mode');
@@ -632,24 +714,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
             if (isDarkMode) {
                 if (themeToggle) themeToggle.textContent = '☀️ Light Mode';
-                Object.values(elements).forEach(elementOrNodeList => {
-                    if (!elementOrNodeList) return;
-                    if (elementOrNodeList instanceof NodeList) {
-                        elementOrNodeList.forEach(el => el && el.classList.add('dark-mode'));
-                    } else {
-                        elementOrNodeList.classList.add('dark-mode');
-                    }
-                });
+                elementsToTheme.forEach(el => el.classList.add('dark-mode'));
             } else {
                 if (themeToggle) themeToggle.textContent = '🌙 Dark Mode';
-                Object.values(elements).forEach(elementOrNodeList => {
-                    if (!elementOrNodeList) return;
-                    if (elementOrNodeList instanceof NodeList) {
-                        elementOrNodeList.forEach(el => el && el.classList.remove('dark-mode'));
-                    } else {
-                        elementOrNodeList.classList.remove('dark-mode');
-                    }
-                });
+                elementsToTheme.forEach(el => el.classList.remove('dark-mode'));
             }
         }
     }
@@ -659,10 +727,10 @@ document.addEventListener("DOMContentLoaded", () => {
         themeToggle.addEventListener('click', () => {
             if (isChristmasMode) {
                 isChristmasMode = false;
-                localStorage.setItem('christmasMode', isChristmasMode);
+                localStorage.setItem('christmasMode', 'false');
             }
             isDarkMode = !isDarkMode;
-            localStorage.setItem('darkMode', isDarkMode);
+            localStorage.setItem('darkMode', String(isDarkMode));
             updateTheme();
         });
     }
@@ -671,10 +739,10 @@ document.addEventListener("DOMContentLoaded", () => {
         christmasThemeToggle.addEventListener('click', () => {
             if (isDarkMode) {
                 isDarkMode = false;
-                localStorage.setItem('darkMode', isDarkMode);
+                localStorage.setItem('darkMode', 'false');
             }
             isChristmasMode = !isChristmasMode;
-            localStorage.setItem('christmasMode', isChristmasMode);
+            localStorage.setItem('christmasMode', String(isChristmasMode));
             updateTheme();
         });
     }
@@ -685,31 +753,43 @@ document.addEventListener("DOMContentLoaded", () => {
     if (closeViewPopupBtn) closeViewPopupBtn.addEventListener("click", closeViewPopup);
 
     // Close popups when clicking overlay
-    if (overlay) overlay.addEventListener("click", () => {
-        closeAddEditPopup();
-        closeViewPopup();
-        closeDeletePopup();
-    });
+    if (overlay) {
+        overlay.addEventListener("click", () => {
+            closeAddEditPopup();
+            closeViewPopup();
+            closeDeletePopup();
+        });
+    }
 
     // Auto-resize textarea
-    if (noteContentInput) noteContentInput.addEventListener("input", function () {
-        this.style.height = "auto";
-        this.style.height = this.scrollHeight + "px";
-    });
+    if (noteContentInput) {
+        noteContentInput.addEventListener("input", function () {
+            this.style.height = "auto";
+            this.style.height = this.scrollHeight + "px";
+        });
+    }
 
     // Confirm delete event listeners
-    const confirmDeleteBtn = document.getElementById('confirm-delete-btn');
-    if (confirmDeleteBtn) confirmDeleteBtn.addEventListener('click', () => {
-        if (noteToDelete !== null) {
-            notes.splice(noteToDelete, 1);
-            localStorage.setItem('notes', JSON.stringify(notes));
-            closeDeletePopup();
-            renderNotes();
-        }
-    });
+    const confirmDeleteBtn = safeGetElement('confirm-delete-btn');
+    if (confirmDeleteBtn) {
+        confirmDeleteBtn.addEventListener('click', () => {
+            if (noteToDelete !== null && notes[noteToDelete]) {
+                notes.splice(noteToDelete, 1);
+                try {
+                    localStorage.setItem('notes', JSON.stringify(notes));
+                } catch (e) {
+                    console.error("Error saving notes:", e);
+                }
+                closeDeletePopup();
+                renderNotes();
+            }
+        });
+    }
 
-    const cancelDeleteBtn = document.getElementById('cancel-delete-btn');
-    if (cancelDeleteBtn) cancelDeleteBtn.addEventListener('click', closeDeletePopup);
+    const cancelDeleteBtn = safeGetElement('cancel-delete-btn');
+    if (cancelDeleteBtn) {
+        cancelDeleteBtn.addEventListener('click', closeDeletePopup);
+    }
 
     // Initialize everything
     renderNotes();
@@ -717,9 +797,4 @@ document.addEventListener("DOMContentLoaded", () => {
     displayTimerLogs();
     updateDisplay();
     updateTheme();
-
-    // MutationObserver (temporary for initial setup)
-    const observer = new MutationObserver(updateTheme);
-    observer.observe(document.body, { childList: true, subtree: true });
-    setTimeout(() => observer.disconnect(), 5000);
 });
