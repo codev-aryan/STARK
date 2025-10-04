@@ -1,4 +1,4 @@
-// Define global variables
+// Global variables
 let currentNoteIndex = null;
 let noteToDelete = null;
 let notes = [];
@@ -10,23 +10,11 @@ let isRunning = false;
 let isDarkMode = localStorage.getItem('darkMode') === 'true';
 let isChristmasMode = localStorage.getItem('christmasMode') === 'true';
 
-// Global function to safely get element
-function safeGetElement(id) {
-    const element = document.getElementById(id);
-    if (!element) {
-        console.warn(`Element with id '${id}' not found`);
-    }
-    return element;
-}
-
-// Global function to save custom thought
-window.saveCustomThought = function() {
-    const customInput = safeGetElement('custom-thought-input');
-    const currentThought = safeGetElement('current-thought');
-    const thoughtDropdown = document.querySelector('.thought-dropdown');
-    
-    if (customInput && customInput.value.trim() && currentThought) {
-        currentThought.textContent = customInput.value;
+// Expose helper functions globally
+window.saveCustomThought = function () {
+    const customInput = document.getElementById('custom-thought-input');
+    if (customInput.value.trim()) {
+        document.getElementById('current-thought').textContent = customInput.value;
         closePopup();
         if (thoughtDropdown) {
             thoughtDropdown.classList.remove('show');
@@ -34,767 +22,504 @@ window.saveCustomThought = function() {
     }
 };
 
-// Global function to close popup
-window.closePopup = function() {
-    const popup = document.querySelector(".popup");
-    if (popup) {
-        popup.remove();
-    }
+window.closePopup = function () {
+    const popup = document.querySelector('.popup');
+    if (popup) popup.remove();
 };
 
-// Global function to edit note
-window.editNote = function(index) {
+window.editNote = function (index) {
     currentNoteIndex = index;
     openAddEditPopup(true);
 };
 
-// Global function to delete note
-window.deleteNote = function(index) {
+window.deleteNote = function (index) {
     noteToDelete = index;
-    const deletePopup = safeGetElement('delete-confirm-popup');
-    const overlay = document.querySelector('.overlay');
-    
-    if (deletePopup) {
-        const deleteMessage = isChristmasMode ? 
-            "Ho Ho Ho! Should we delete this naughty list?" : 
-            "Are you sure you want to delete this note?";
-        const messagePara = deletePopup.querySelector('p');
-        if (messagePara) {
-            messagePara.textContent = deleteMessage;
-        }
-        deletePopup.classList.add('show');
-    }
-    
-    if (overlay) {
-        overlay.classList.add('active');
-    }
+    const deletePopup = document.getElementById('delete-confirm-popup');
+    const msg = isChristmasMode
+        ? 'Ho Ho Ho! Should we delete this naughty list?'
+        : 'Are you sure you want to delete this note?';
+    deletePopup.querySelector('p').textContent = msg;
+    deletePopup.classList.add('show');
+    document.querySelector('.overlay').classList.add('active');
 };
 
-// Global function to close delete popup
-window.closeDeletePopup = function() {
-    const deletePopup = safeGetElement('delete-confirm-popup');
-    const overlay = document.querySelector('.overlay');
-    
-    if (deletePopup) {
-        deletePopup.classList.remove('show');
-    }
-    if (overlay) {
-        overlay.classList.remove('active');
-    }
+window.closeDeletePopup = function () {
+    document.getElementById('delete-confirm-popup').classList.remove('show');
+    document.querySelector('.overlay').classList.remove('active');
     noteToDelete = null;
 };
 
-// Global function to save session log
-window.saveSessionLog = function() {
-    const taskNameInput = safeGetElement("session-task-name");
-    if (!taskNameInput) return;
-    
-    const taskName = taskNameInput.value.trim();
+window.saveSessionLog = function () {
+    const taskName = document.getElementById('session-task-name').value.trim();
     if (taskName) {
-        const log = {
+        timerLogs.push({
             task: taskName,
             duration: formatDuration(seconds),
             timestamp: new Date().toLocaleString(),
-        };
-        timerLogs.push(log);
-        localStorage.setItem("timerLogs", JSON.stringify(timerLogs));
+        });
+        localStorage.setItem('timerLogs', JSON.stringify(timerLogs));
         displayTimerLogs();
     }
     closePopup();
     resetTimer();
 };
 
-// Global function to close congrats popup
-window.closeCongratsPopup = function() {
-    const congratsPopup = document.querySelector(".popup");
-    if (congratsPopup) {
-        congratsPopup.remove();
-    }
+window.closeCongratsPopup = function () {
+    const popup = document.querySelector('.popup');
+    if (popup) popup.remove();
 };
 
-// Helper functions
-function formatDuration(seconds) {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${pad(minutes)} min ${pad(remainingSeconds)} sec`;
+// Helper utilities
+const pad = (n) => (n < 10 ? '0' + n : n);
+function formatDuration(sec) {
+    const m = Math.floor(sec / 60);
+    const s = sec % 60;
+    return `${pad(m)} min ${pad(s)} sec`;
 }
-
-function pad(num) {
-    return num < 10 ? `0${num}` : num;
-}
-
 function resetTimer() {
     seconds = 0;
-    const timerDisplay = safeGetElement("timer-display");
-    if (timerDisplay) {
-        timerDisplay.textContent = "00:00";
-    }
+    const display = document.getElementById('timer-display');
+    if (display) display.textContent = '00:00';
     isRunning = false;
-    const startTimerButton = safeGetElement("start-timer");
-    if (startTimerButton) {
-        startTimerButton.textContent = "Start Timer";
-        startTimerButton.classList.remove('stop');
+    const btn = document.getElementById('start-timer');
+    if (btn) {
+        btn.textContent = 'Start Timer';
+        btn.classList.remove('stop');
     }
 }
 
 function openAddEditPopup(isEdit = false) {
-    const popupHeader = safeGetElement("popup-header");
-    const addEditPopup = safeGetElement("add-edit-popup");
-    const overlay = document.querySelector(".overlay");
-    const noteTitleInput = safeGetElement("note-title-input");
-    const noteContentInput = safeGetElement("note-content-input");
-    
-    if (addEditPopup) addEditPopup.classList.add("show");
-    if (overlay) overlay.classList.add("active");
+  const header = document.getElementById('popup-header');
+    const popup = document.getElementById('add-edit-popup');
+    const overlay = document.querySelector('.overlay');
+    if (popup) popup.classList.add('show');
+    if (overlay) overlay.classList.add('active');
 
-    if (popupHeader) {
-        popupHeader.textContent = isEdit ? "Edit Note" : "Add Note";
-    }
-
-    if (isEdit && currentNoteIndex !== null && notes[currentNoteIndex]) {
-        if (noteTitleInput) noteTitleInput.value = notes[currentNoteIndex].title || "";
-        if (noteContentInput) noteContentInput.value = notes[currentNoteIndex].content || "";
+    if (isEdit && currentNoteIndex !== null) {
+        header.textContent = 'Edit Note';
+        document.getElementById('note-title-input').value =
+            notes[currentNoteIndex].title;
+        document.getElementById('note-content-input').value =
+            notes[currentNoteIndex].content;
     } else {
-        if (noteTitleInput) noteTitleInput.value = "";
-        if (noteContentInput) noteContentInput.value = "";
+        header.textContent = 'Add Note';
+        document.getElementById('note-title-input').value = '';
+        document.getElementById('note-content-input').value = '';
     }
 }
 
-// Wait for DOM to be fully loaded
-document.addEventListener("DOMContentLoaded", () => {
-    // Load data from localStorage with error handling
+// DOM ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Load persisted data
     try {
-        notes = JSON.parse(localStorage.getItem("notes")) || [];
-        if (!Array.isArray(notes)) notes = [];
-    } catch (e) {
-        console.error("Error loading notes:", e);
+        notes = JSON.parse(localStorage.getItem('notes')) || [];
+    } catch {
         notes = [];
-        localStorage.removeItem("notes");
+        localStorage.removeItem('notes');
     }
-
     try {
-        todos = JSON.parse(localStorage.getItem("todos")) || [];
-        if (!Array.isArray(todos)) todos = [];
-    } catch (e) {
-        console.error("Error loading todos:", e);
+        todos = JSON.parse(localStorage.getItem('todos')) || [];
+    } catch {
         todos = [];
-        localStorage.removeItem("todos");
+        localStorage.removeItem('todos');
     }
-
     try {
-        timerLogs = JSON.parse(localStorage.getItem("timerLogs")) || [];
-        if (!Array.isArray(timerLogs)) timerLogs = [];
-    } catch (e) {
-        console.error("Error loading timer logs:", e);
+        timerLogs = JSON.parse(localStorage.getItem('timerLogs')) || [];
+    } catch {
         timerLogs = [];
-        localStorage.removeItem("timerLogs");
+        localStorage.removeItem('timerLogs');
     }
 
-    // Create overlay if it doesn't exist
-    let overlay = document.querySelector(".overlay");
+    // Cache DOM nodes
+    const thoughtContainer = document.querySelector('.thought-container');
+    const currentThought = document.getElementById('current-thought');
+    const dropdownArrow = document.querySelector('.dropdown-arrow');
+    const thoughtDropdown = document.querySelector('.thought-dropdown');
+    const notesContainer = document.getElementById('notes-container');
+    const addNoteBtn = document.getElementById('add-note-btn');
+    const addEditPopup = document.getElementById('add-edit-popup');
+    const saveNoteBtn = document.getElementById('save-note-btn');
+    const cancelAddBtn = document.getElementById('cancel-add-btn');
+    const noteTitleInput = document.getElementById('note-title-input');
+    const noteContentInput = document.getElementById('note-content-input');
+    const viewPopup = document.getElementById('view-popup');
+    const viewPopupTitle = document.getElementById('view-popup-title');
+    const viewPopupContent = document.getElementById('view-popup-content');
+    const closeViewBtn = document.getElementById('close-view-popup-btn');
+    const todoForm = document.getElementById('todo-form');
+    const todoInput = document.getElementById('todo-input');
+    const todoList = document.getElementById('todo-list');
+    const timerDisplay = document.getElementById('timer-display');
+    const startTimerBtn = document.getElementById('start-timer');
+    const logsContainer = document.getElementById('timer-logs');
+    const themeToggle = document.getElementById('theme-toggle');
+    const xmasToggle = document.getElementById('christmas-theme-toggle');
+
+    // Overlay helper
+    let overlay = document.querySelector('.overlay');
     if (!overlay) {
-        overlay = document.createElement("div");
-        overlay.classList.add("overlay");
+        overlay = document.createElement('div');
+        overlay.className = 'overlay';
         document.body.appendChild(overlay);
     }
 
-    // Cache DOM elements
-    const thoughtContainer = document.querySelector('.thought-container');
-    const currentThought = safeGetElement('current-thought');
-    const dropdownArrow = document.querySelector('.dropdown-arrow');
-    const thoughtDropdown = document.querySelector('.thought-dropdown');
-    const thoughtOptions = document.querySelectorAll('.thought-option');
-    const notesContainer = safeGetElement("notes-container");
-    const addNoteBtn = safeGetElement("add-note-btn");
-    const addEditPopup = safeGetElement("add-edit-popup");
-    const saveNoteBtn = safeGetElement("save-note-btn");
-    const cancelAddBtn = safeGetElement("cancel-add-btn");
-    const noteTitleInput = safeGetElement("note-title-input");
-    const noteContentInput = safeGetElement("note-content-input");
-    const viewPopup = safeGetElement("view-popup");
-    const viewPopupTitle = safeGetElement("view-popup-title");
-    const viewPopupContent = safeGetElement("view-popup-content");
-    const closeViewPopupBtn = safeGetElement("close-view-popup-btn");
-    const todoForm = safeGetElement("todo-form");
-    const todoInput = safeGetElement("todo-input");
-    const todoList = safeGetElement("todo-list");
-    const timerDisplay = safeGetElement("timer-display");
-    const startTimerButton = safeGetElement("start-timer");
-    const logsContainer = safeGetElement("timer-logs");
-    const themeToggle = safeGetElement('theme-toggle');
-    const christmasThemeToggle = safeGetElement('christmas-theme-toggle');
-
-    // Toggle dropdown
-    if (dropdownArrow && thoughtDropdown) {
-        dropdownArrow.addEventListener('click', (e) => {
-            e.stopPropagation();
-            thoughtDropdown.classList.toggle('show');
-        });
+    // Motivation dropdown
+    if (dropdownArrow) {
+        dropdownArrow.addEventListener('click', () =>
+            thoughtDropdown.classList.toggle('show')
+        );
     }
-
-    // Close dropdown when clicking outside
     document.addEventListener('click', (e) => {
-        if (thoughtContainer && !thoughtContainer.contains(e.target) && thoughtDropdown) {
+        if (thoughtContainer && !thoughtContainer.contains(e.target)) {
             thoughtDropdown.classList.remove('show');
         }
     });
-
-    // Handle thought selection
-    if (thoughtOptions && thoughtOptions.length > 0) {
-        thoughtOptions.forEach(option => {
-            option.addEventListener('click', () => {
-                if (option.id === 'custom-thought') {
-                    showCustomThoughtPopup();
-                } else {
-                    const thought = option.getAttribute('data-thought');
-                    if (currentThought && thought) {
-                        currentThought.textContent = thought;
-                    }
-                    if (thoughtDropdown) {
-                        thoughtDropdown.classList.remove('show');
-                    }
-                }
-            });
+    document.querySelectorAll('.thought-option').forEach((opt) => {
+        opt.addEventListener('click', () => {
+            if (opt.id === 'custom-thought') {
+                showCustomThoughtPopup();
+            } else {
+                currentThought.textContent = opt.dataset.thought;
+                thoughtDropdown.classList.remove('show');
+            }
         });
-    }
+    });
 
     function showCustomThoughtPopup() {
-        const popup = document.createElement("div");
-        popup.classList.add("popup");
+        const popup = document.createElement('div');
+        popup.className = 'popup';
         popup.innerHTML = `
-            <div class="popup-content">
-                <h2>Custom Thought</h2>
-                <p>Enter your motivational thought:</p>
-                <input type="text" id="custom-thought-input" maxlength="40" placeholder="Enter your thought">
-                <button onclick="saveCustomThought()">Save</button>
-                <button onclick="closePopup()">Cancel</button>
-            </div>
-        `;
+        <div class="popup-content">
+          <h2>Custom Thought</h2>
+          <p>Enter your motivational thought:</p>
+          <input id="custom-thought-input" maxlength="40" placeholder="Enter your thought">
+          <button onclick="saveCustomThought()">Save</button>
+          <button onclick="closePopup()">Cancel</button>
+        </div>`;
         document.body.appendChild(popup);
     }
 
+    // Notes
     function renderNotes() {
         if (!notesContainer) return;
-        
-        notesContainer.innerHTML = "";
-        if (!notes || notes.length === 0) {
-            notesContainer.innerHTML = '<div class="no-notes">No notes yet. Click "Add Note" to create one.</div>';
+        notesContainer.innerHTML = '';
+        if (!notes.length) {
+            notesContainer.innerHTML =
+                '<div class="no-notes">No notes yet. Click "Add Note" to create one.</div>';
             return;
         }
-
-        notes.forEach((note, index) => {
-            if (!note || !note.title) return;
-            
-            const noteCard = document.createElement("div");
-            noteCard.classList.add("note-card");
-
-            const displayTitle = note.title.length > 30 ?
-                note.title.substring(0, 30) + '...' :
-                note.title;
-
-            noteCard.innerHTML = `
-                <h3>${displayTitle}</h3>
-                <div class="note-actions">
-                    <button class="edit-btn" onclick="editNote(${index})">✏️</button>
-                    <button class="delete-btn" onclick="deleteNote(${index})">🗑️</button>
-                </div>
-            `;
-
-            noteCard.addEventListener("click", (e) => {
-                if (!e.target.closest('.edit-btn') && !e.target.closest('.delete-btn')) {
-                    openViewPopup(index);
-                }
+        notes.forEach((note, idx) => {
+            const card = document.createElement('div');
+            card.className = 'note-card';
+            const title =
+                note.title.length > 30
+                    ? note.title.substring(0, 30) + '…'
+                    : note.title;
+            card.innerHTML = `
+            <h3>${title}</h3>
+            <div class="note-actions">
+              <button class="edit-btn" onclick="editNote(${idx})">✏️</button>
+              <button class="delete-btn" onclick="deleteNote(${idx})">🗑️</button>
+            </div>`;
+            card.addEventListener('click', (e) => {
+                if (!e.target.closest('.edit-btn, .delete-btn'))
+                    openViewPopup(idx);
             });
-
-            notesContainer.appendChild(noteCard);
+            notesContainer.appendChild(card);
         });
     }
-
-    if (addNoteBtn) {
-        addNoteBtn.addEventListener("click", () => {
+    if (addNoteBtn)
+        addNoteBtn.addEventListener('click', () => {
             currentNoteIndex = null;
             openAddEditPopup(false);
         });
-    }
-
     function closeAddEditPopup() {
-        if (addEditPopup) addEditPopup.classList.remove("show");
-        if (overlay) overlay.classList.remove("active");
-        if (noteTitleInput) noteTitleInput.value = "";
-        if (noteContentInput) noteContentInput.value = "";
+        addEditPopup?.classList.remove('show');
+        overlay?.classList.remove('active');
+        if (noteTitleInput) noteTitleInput.value = '';
+        if (noteContentInput) noteContentInput.value = '';
     }
-
     function saveNote() {
-        if (!noteTitleInput || !noteContentInput) return;
-        
         const title = noteTitleInput.value.trim();
         const content = noteContentInput.value.trim();
-
         if (title && content) {
-            const note = {
-                title,
-                content,
-                timestamp: new Date().toLocaleString()
-            };
-
-            if (currentNoteIndex !== null && currentNoteIndex < notes.length) {
+            const note = { title, content, timestamp: new Date().toLocaleString() };
+            if (currentNoteIndex !== null) {
                 notes[currentNoteIndex] = note;
             } else {
                 notes.push(note);
             }
-
-            try {
-                localStorage.setItem('notes', JSON.stringify(notes));
-            } catch (e) {
-                console.error("Error saving notes:", e);
-            }
-            
+            localStorage.setItem('notes', JSON.stringify(notes));
             closeAddEditPopup();
             renderNotes();
         }
     }
-
-    function openViewPopup(index) {
-        if (!viewPopup || !notes[index]) return;
-        
-        currentNoteIndex = index;
-        viewPopup.classList.add("show");
-        if (overlay) overlay.classList.add("active");
-        
-        if (viewPopupTitle) viewPopupTitle.textContent = notes[index].title || "";
-        if (viewPopupContent) viewPopupContent.textContent = notes[index].content || "";
-        
-        const timestampElement = safeGetElement("view-popup-timestamp");
-        if (timestampElement) {
-            timestampElement.textContent = notes[index].timestamp || 'No timestamp available';
-        }
+    function openViewPopup(idx) {
+        if (!viewPopup || !viewPopupTitle || !viewPopupContent) return;
+        currentNoteIndex = idx;
+        viewPopup.classList.add('show');
+        overlay.classList.add('active');
+        viewPopupTitle.textContent = notes[idx].title;
+        viewPopupContent.value = notes[idx].content;
+        const ts = document.getElementById('view-popup-timestamp');
+        if (ts) ts.textContent = notes[idx].timestamp || 'No timestamp';
     }
-
     function closeViewPopup() {
-        if (viewPopup) viewPopup.classList.remove("show");
-        if (overlay) overlay.classList.remove("active");
+        viewPopup?.classList.remove('show');
+        overlay?.classList.remove('active');
     }
 
-    // Todo functionality
+    // To-Dos
     function displayTodos() {
         if (!todoList) return;
-        
-        todoList.innerHTML = "";
-        
-        if (!todos || todos.length === 0) {
-            updateProgress();
-            return;
-        }
-
-        todos.forEach((todo, index) => {
-            if (!todo || !todo.name) return;
-            
-            const li = document.createElement("li");
+        todoList.innerHTML = '';
+        todos.forEach((todo, idx) => {
+            const li = document.createElement('li');
             li.textContent = todo.name;
-
-            if (todo.completed) {
-                li.classList.add("completed");
-            }
-
-            const controls = document.createElement("div");
-            controls.classList.add("task-controls");
-
-            const tickButton = document.createElement("button");
-            tickButton.textContent = todo.completed ? "✗" : "✓";
-            tickButton.classList.add(todo.completed ? "delete-button" : "tick-button");
-            tickButton.addEventListener("click", () => {
+            if (todo.completed) li.classList.add('completed');
+            const controls = document.createElement('div');
+            controls.className = 'task-controls';
+            const tick = document.createElement('button');
+            tick.textContent = todo.completed ? '✗' : '✓';
+            tick.className = todo.completed ? 'delete-button' : 'tick-button';
+            tick.addEventListener('click', () => {
                 todo.completed = !todo.completed;
-                try {
-                    localStorage.setItem("todos", JSON.stringify(todos));
-                } catch (e) {
-                    console.error("Error saving todos:", e);
-                }
+                localStorage.setItem('todos', JSON.stringify(todos));
                 displayTodos();
                 updateProgress();
-                if (todo.completed) {
-                    showCongratsPopup();
-                }
+                if (todo.completed) showCongratsPopup();
             });
-
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "🗑";
-            deleteButton.classList.add("delete-button");
-            deleteButton.addEventListener("click", () => {
-                todos.splice(index, 1);
-                try {
-                    localStorage.setItem("todos", JSON.stringify(todos));
-                } catch (e) {
-                    console.error("Error saving todos:", e);
-                }
+            const del = document.createElement('button');
+            del.textContent = '🗑';
+            del.className = 'delete-button';
+            del.addEventListener('click', () => {
+                todos.splice(idx, 1);
+                localStorage.setItem('todos', JSON.stringify(todos));
                 displayTodos();
                 updateProgress();
             });
-
-            controls.appendChild(tickButton);
-            controls.appendChild(deleteButton);
+            controls.append(tick, del);
             li.appendChild(controls);
             todoList.prepend(li);
         });
         updateProgress();
     }
-
-    if (todoForm && todoInput) {
-        todoForm.addEventListener("submit", (e) => {
+    if (todoForm) {
+        todoForm.addEventListener('submit', (e) => {
             e.preventDefault();
-            const newTask = todoInput.value.trim();
-            if (newTask) {
-                todos.push({ name: newTask, completed: false });
-                try {
-                    localStorage.setItem("todos", JSON.stringify(todos));
-                } catch (e) {
-                    console.error("Error saving todos:", e);
-                }
+            const task = todoInput.value.trim();
+            if (task) {
+                todos.push({ name: task, completed: false });
+                localStorage.setItem('todos', JSON.stringify(todos));
                 displayTodos();
-                todoInput.value = "";
+                todoInput.value = '';
                 updateProgress();
             }
         });
     }
-
     function updateProgress() {
-        const progressBar = safeGetElement('todo-progress');
-        if (!progressBar) return;
-        
-        const totalTasks = todos ? todos.length : 0;
-        const completedTasks = todos ? todos.filter(todo => todo && todo.completed).length : 0;
-        const progressPercent = totalTasks === 0 ? 0 : (completedTasks / totalTasks) * 100;
-        progressBar.style.width = `${progressPercent}%`;
+        const bar = document.getElementById('todo-progress');
+        if (!bar) return;
+        const total = todos.length;
+        const done = todos.filter((t) => t.completed).length;
+        bar.style.width = total ? `${(done / total) * 100}%` : '0%';
     }
-
     function showCongratsPopup() {
-        const congratsPopup = document.createElement("div");
-        congratsPopup.classList.add("popup");
-        const congratsMessage = isChristmasMode ? 
-            "Ho Ho Ho! You deserve presents now!" : 
-            "Congratulations! You completed a task successfully!";
-        congratsPopup.innerHTML = `
-            <div class="popup-content">
-                <h2>${congratsMessage}</h2>
-                <button onclick="closeCongratsPopup()">Close</button>
-            </div>
-        `;
-        document.body.appendChild(congratsPopup);
+        const popup = document.createElement('div');
+        popup.className = 'popup';
+        const msg = isChristmasMode
+            ? 'Ho Ho Ho! You deserve presents now!'
+            : 'Congratulations! You completed a task successfully!';
+        popup.innerHTML = `<div class="popup-content"><h2>${msg}</h2><button onclick="closeCongratsPopup()">Close</button></div>`;
+        document.body.appendChild(popup);
     }
 
-    // Timer functionality
-    if (startTimerButton) {
-        startTimerButton.addEventListener("click", function () {
+    // Timer
+    if (startTimerBtn) {
+        startTimerBtn.addEventListener('click', () => {
             if (!isRunning) {
                 isRunning = true;
-                startTimerButton.textContent = "Stop Timer";
-                startTimerButton.classList.add('stop');
+                startTimerBtn.textContent = 'Stop Timer';
+                startTimerBtn.classList.add('stop');
                 startTimer();
             } else {
                 isRunning = false;
-                startTimerButton.textContent = "Start Timer";
-                startTimerButton.classList.remove('stop');
+                startTimerBtn.textContent = 'Start Timer';
+                startTimerBtn.classList.remove('stop');
                 stopTimer();
             }
         });
     }
-
     function startTimer() {
         if (timerInterval) clearInterval(timerInterval);
         seconds = 0;
-        if (timerDisplay) timerDisplay.textContent = "00:00";
+        if (timerDisplay) timerDisplay.textContent = '00:00';
         timerInterval = setInterval(() => {
             seconds++;
-            const minutes = Math.floor(seconds / 60);
-            const displaySeconds = seconds % 60;
-            if (timerDisplay) {
-                timerDisplay.textContent = `${pad(minutes)}:${pad(displaySeconds)}`;
-            }
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            if (timerDisplay) timerDisplay.textContent = `${pad(m)}:${pad(s)}`;
         }, 1000);
     }
-
     function stopTimer() {
-        if (timerInterval) {
-            clearInterval(timerInterval);
-            timerInterval = null;
-        }
-        if (timerDisplay) timerDisplay.textContent = "00:00";
-        if (seconds >= 5) {
-            showSessionPopup();
-        } else {
-            resetTimer();
-        }
+        if (timerInterval) clearInterval(timerInterval);
+        if (timerDisplay) timerDisplay.textContent = '00:00';
+        if (seconds >= 5) showSessionPopup();
     }
-
     function showSessionPopup() {
-        const popup = document.createElement("div");
-        popup.classList.add("popup");
-        const sessionMessage = isChristmasMode ? 
-            "Ho Ho Ho! Which gift you packed now?" : 
-            "Which task does this session belong to?";
+        const popup = document.createElement('div');
+        popup.className = 'popup';
+        const msg = isChristmasMode
+            ? 'Ho Ho Ho! Which gift you packed now?'
+            : 'Which task does this session belong to?';
         popup.innerHTML = `
-            <div class="popup-content">
-                <h2>Session Log</h2>
-                <p>${sessionMessage}</p>
-                <input type="text" id="session-task-name" maxlength="30" placeholder="Enter task name">
-                <button onclick="saveSessionLog()">Save</button>
-                <button onclick="closePopup()">Close</button>
-            </div>
-        `;
+        <div class="popup-content">
+          <h2>Session Log</h2>
+          <p>${msg}</p>
+          <input id="session-task-name" maxlength="30" placeholder="Enter task name">
+          <button onclick="saveSessionLog()">Save</button>
+          <button onclick="closePopup()">Close</button>
+        </div>`;
         document.body.appendChild(popup);
     }
-
     function displayTimerLogs() {
         if (!logsContainer) return;
-        
-        logsContainer.innerHTML = "";
-        
-        if (!timerLogs || timerLogs.length === 0) return;
-
-        timerLogs.forEach((log, index) => {
-            if (!log) return;
-            
-            const logEntry = document.createElement("div");
-            logEntry.classList.add("log-entry");
-
-            const logText = document.createElement("span");
-            logText.textContent = `[${log.timestamp || 'N/A'}] Task: ${log.task || 'Unnamed'} | ${log.duration || '0 min 0 sec'}`;
-            logEntry.appendChild(logText);
-
-            const deleteButton = document.createElement("button");
-            deleteButton.textContent = "🗑";
-            deleteButton.classList.add("log-delete");
-            deleteButton.addEventListener("click", () => {
-                timerLogs.splice(index, 1);
-                try {
-                    localStorage.setItem("timerLogs", JSON.stringify(timerLogs));
-                } catch (e) {
-                    console.error("Error saving timer logs:", e);
-                }
-                displayTimerLogs();
-            });
-
-            logEntry.appendChild(deleteButton);
-            logsContainer.prepend(logEntry);
+        logsContainer.innerHTML = '';
+        timerLogs.forEach((log, idx) => {
+            const div = document.createElement('div');
+            div.className = 'log-entry';
+            div.innerHTML = `<span>[${log.timestamp}] Task: ${log.task} | ${log.duration}</span>
+            <button class="log-delete" data-idx="${idx}">🗑</button>`;
+            div
+                .querySelector('.log-delete')
+                .addEventListener('click', (e) => {
+                    timerLogs.splice(e.target.dataset.idx, 1);
+                    localStorage.setItem('timerLogs', JSON.stringify(timerLogs));
+                    displayTimerLogs();
+                });
+            logsContainer.prepend(div);
         });
     }
 
-    // Calculator functionality
-    const calculator = {
-        displayValue: '0',
-        expression: ''
-    };
-
-    const calculatorKeys = document.querySelector('.calculator-keys');
-    if (calculatorKeys) {
-        calculatorKeys.addEventListener('click', (event) => {
-            const { target } = event;
-            if (!target.matches('button')) return;
-
-            if (target.classList.contains('equal-sign')) {
-                calculateResult();
-                updateDisplay();
-                return;
-            }
-
-            if (target.classList.contains('operator')) {
-                inputOperator(target.value);
-                updateDisplay();
-                return;
-            }
-
-            if (target.classList.contains('decimal')) {
-                inputDecimal();
-                updateDisplay();
-                return;
-            }
-
-            if (target.classList.contains('all-clear')) {
-                clearCalculator();
-                updateDisplay();
-                return;
-            }
-
-            inputDigit(target.value);
-            updateDisplay();
+    // Calculator
+    const calc = { displayValue: '0', expression: '' };
+    const keys = document.querySelector('.calculator-keys');
+    if (keys) {
+        keys.addEventListener('click', (e) => {
+            const t = e.target;
+            if (!t.matches('button')) return;
+            if (t.classList.contains('equal-sign')) return calculate();
+            if (t.classList.contains('operator')) return pushOp(t.value);
+            if (t.classList.contains('decimal')) return pushDecimal();
+            if (t.classList.contains('all-clear')) return clearCalc();
+            pushDigit(t.value);
         });
     }
-
-    function updateDisplay() {
-        const display = document.querySelector('.calculator-screen');
-        if (display) {
-            display.value = calculator.displayValue;
+    function updateCalcDisplay() {
+        const scr = document.querySelector('.calculator-screen');
+        if (scr) scr.value = calc.displayValue;
+    }
+    function pushDigit(d) {
+        calc.displayValue = calc.displayValue === '0' ? d : calc.displayValue + d;
+        calc.expression = calc.expression === '0' ? d : calc.expression + d;
+        updateCalcDisplay();
+    }
+    function pushOp(op) {
+        calc.displayValue += op;
+        calc.expression += op;
+        updateCalcDisplay();
+    }
+    function pushDecimal() {
+        if (!calc.displayValue.includes('.')) {
+            calc.displayValue += '.';
+            calc.expression += '.';
+            updateCalcDisplay();
         }
     }
-
-    function inputDigit(digit) {
-        calculator.displayValue = calculator.displayValue === '0' ? digit : calculator.displayValue + digit;
-        calculator.expression = calculator.expression === '0' ? digit : calculator.expression + digit;
+    function clearCalc() {
+        calc.displayValue = '0';
+        calc.expression = '';
+        updateCalcDisplay();
     }
-
-    function inputOperator(operator) {
-        calculator.displayValue += operator;
-        calculator.expression += operator;
+    function validate(expr) {
+        return !/[^0-9+\-*/.()^]/.test(expr);
     }
-
-    function inputDecimal() {
-        if (!calculator.displayValue.includes('.')) {
-            calculator.displayValue += '.';
-            calculator.expression += '.';
-        }
-    }
-
-    function clearCalculator() {
-        calculator.displayValue = '0';
-        calculator.expression = '';
-    }
-
-    function validateExpression(expr) {
+    function calculate() {
         try {
-            expr = expr.replace(/\^/g, '**');
-            if (/[^0-9+\-*/.()^]/.test(expr)) return false;
-            return true;
-        } catch (e) {
-            return false;
+            if (!validate(calc.expression)) throw 'Invalid';
+            const expr = calc.expression.replace(/\^/g, '**');
+            const res = eval(expr);
+            calc.displayValue = String(res);
+            calc.expression = String(res);
+        } catch {
+            calc.displayValue = 'Error';
+            setTimeout(clearCalc, 2000);
         }
+        updateCalcDisplay();
     }
 
-    function calculateResult() {
-        try {
-            if (!validateExpression(calculator.expression)) {
-                throw new Error('Invalid Expression');
-            }
-            const expr = calculator.expression.replace(/\^/g, '**');
-            const result = eval(expr);
-            calculator.displayValue = String(result);
-            calculator.expression = String(result);
-        } catch (e) {
-            calculator.displayValue = 'Error';
-            setTimeout(() => {
-                clearCalculator();
-                updateDisplay();
-            }, 2000);
-        }
-    }
-
-    // Theme Toggle Functionality
+    // Theme toggles
     function updateTheme() {
-        const christmasStylesheet = document.querySelector('link[href="christmas-styles.css"]');
-        
-        // Get all elements that need theme updates
-        const elementsToTheme = [
-            document.body,
-            document.querySelector('header'),
-            ...document.querySelectorAll('.section'),
-            ...document.querySelectorAll('input, textarea'),
-            ...document.querySelectorAll('button'),
-            ...document.querySelectorAll('.note-card'),
-            ...document.querySelectorAll('.popup-content'),
-            document.querySelector('.calculator'),
-            document.querySelector('.calculator-screen'),
-            ...document.querySelectorAll('.calculator-keys button'),
-            document.querySelector('.thought-container'),
-            ...document.querySelectorAll('li'),
-            document.querySelector('.thought-dropdown'),
-            ...document.querySelectorAll('.log-entry'),
-            ...document.querySelectorAll('.thought-option')
-        ].filter(el => el !== null);
-
+        const xmasSheet = document.querySelector('link[href="christmas-styles.css"]');
         if (isChristmasMode) {
-            if (themeToggle) themeToggle.textContent = '🌙 Dark Mode';
-            if (christmasThemeToggle) christmasThemeToggle.textContent = '🎄 Christmas Mode On';
-            
-            elementsToTheme.forEach(el => el.classList.remove('dark-mode'));
-            
-            if (christmasStylesheet) christmasStylesheet.disabled = false;
+            if (xmasSheet) xmasSheet.disabled = false;
             document.body.classList.add('christmas-mode');
+            document.body.classList.remove('dark-mode');
+            if (themeToggle) themeToggle.textContent = '🌙 Dark Mode';
+            if (xmasToggle) xmasToggle.textContent = '🎄 Christmas Mode On';
         } else {
-            if (christmasStylesheet) christmasStylesheet.disabled = true;
-            if (christmasThemeToggle) christmasThemeToggle.textContent = '🎄 Christmas Mode Off';
+            if (xmasSheet) xmasSheet.disabled = true;
             document.body.classList.remove('christmas-mode');
-
-            if (isDarkMode) {
-                if (themeToggle) themeToggle.textContent = '☀️ Light Mode';
-                elementsToTheme.forEach(el => el.classList.add('dark-mode'));
-            } else {
-                if (themeToggle) themeToggle.textContent = '🌙 Dark Mode';
-                elementsToTheme.forEach(el => el.classList.remove('dark-mode'));
-            }
+            document.body.classList.toggle('dark-mode', isDarkMode);
+            if (themeToggle)
+                themeToggle.textContent = isDarkMode ? '☀️ Light Mode' : '🌙 Dark Mode';
+            if (xmasToggle) xmasToggle.textContent = '🎄 Christmas Mode Off';
         }
     }
-
-    // Event listeners for theme toggles
-    if (themeToggle) {
+    if (themeToggle)
         themeToggle.addEventListener('click', () => {
-            if (isChristmasMode) {
-                isChristmasMode = false;
-                localStorage.setItem('christmasMode', 'false');
-            }
+            isChristmasMode = false;
             isDarkMode = !isDarkMode;
-            localStorage.setItem('darkMode', String(isDarkMode));
+            localStorage.setItem('darkMode', isDarkMode);
+            localStorage.setItem('christmasMode', isChristmasMode);
             updateTheme();
         });
-    }
-
-    if (christmasThemeToggle) {
-        christmasThemeToggle.addEventListener('click', () => {
-            if (isDarkMode) {
-                isDarkMode = false;
-                localStorage.setItem('darkMode', 'false');
-            }
+    if (xmasToggle)
+        xmasToggle.addEventListener('click', () => {
+            isDarkMode = false;
             isChristmasMode = !isChristmasMode;
-            localStorage.setItem('christmasMode', String(isChristmasMode));
+            localStorage.setItem('darkMode', isDarkMode);
+            localStorage.setItem('christmasMode', isChristmasMode);
             updateTheme();
         });
-    }
 
-    // Event listeners for notes
-    if (saveNoteBtn) saveNoteBtn.addEventListener("click", saveNote);
-    if (cancelAddBtn) cancelAddBtn.addEventListener("click", closeAddEditPopup);
-    if (closeViewPopupBtn) closeViewPopupBtn.addEventListener("click", closeViewPopup);
-
-    // Close popups when clicking overlay
-    if (overlay) {
-        overlay.addEventListener("click", () => {
-            closeAddEditPopup();
-            closeViewPopup();
-            closeDeletePopup();
-        });
-    }
-
-    // Auto-resize textarea
-    if (noteContentInput) {
-        noteContentInput.addEventListener("input", function () {
-            this.style.height = "auto";
-            this.style.height = this.scrollHeight + "px";
-        });
-    }
-
-    // Confirm delete event listeners
-    const confirmDeleteBtn = safeGetElement('confirm-delete-btn');
-    if (confirmDeleteBtn) {
-        confirmDeleteBtn.addEventListener('click', () => {
-            if (noteToDelete !== null && notes[noteToDelete]) {
+    // Event wiring
+    saveNoteBtn?.addEventListener('click', saveNote);
+    cancelAddBtn?.addEventListener('click', closeAddEditPopup);
+    closeViewBtn?.addEventListener('click', closeViewPopup);
+    overlay?.addEventListener('click', () => {
+        closeAddEditPopup();
+        closeViewPopup();
+        closeDeletePopup();
+    });
+    document
+        .getElementById('confirm-delete-btn')
+        ?.addEventListener('click', () => {
+            if (noteToDelete !== null) {
                 notes.splice(noteToDelete, 1);
-                try {
-                    localStorage.setItem('notes', JSON.stringify(notes));
-                } catch (e) {
-                    console.error("Error saving notes:", e);
-                }
+                localStorage.setItem('notes', JSON.stringify(notes));
                 closeDeletePopup();
                 renderNotes();
             }
         });
-    }
+    document
+        .getElementById('cancel-delete-btn')
+        ?.addEventListener('click', closeDeletePopup);
 
-    const cancelDeleteBtn = safeGetElement('cancel-delete-btn');
-    if (cancelDeleteBtn) {
-        cancelDeleteBtn.addEventListener('click', closeDeletePopup);
-    }
-
-    // Initialize everything
+    // Initial render
     renderNotes();
     displayTodos();
     displayTimerLogs();
-    updateDisplay();
+    updateCalcDisplay();
     updateTheme();
 });
