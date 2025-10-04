@@ -64,7 +64,7 @@ STARK addresses the common challenges students face in managing their academic r
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/cipherex/stark.git
+git clone https://github.com/codev-aryan/stark.git
 cd stark
 ```
 

@@ -16,7 +16,9 @@ window.saveCustomThought = function () {
     if (customInput.value.trim()) {
         document.getElementById('current-thought').textContent = customInput.value;
         closePopup();
-        document.querySelector('.thought-dropdown').classList.remove('show');
+        if (thoughtDropdown) {
+            thoughtDropdown.classList.remove('show');
+        }
     }
 };
 
@@ -87,7 +89,7 @@ function resetTimer() {
 }
 
 function openAddEditPopup(isEdit = false) {
-    const header = document.getElementById('popup-header');
+  const header = document.getElementById('popup-header');
     const popup = document.getElementById('add-edit-popup');
     const overlay = document.querySelector('.overlay');
     if (popup) popup.classList.add('show');
