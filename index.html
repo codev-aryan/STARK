@@ -1,161 +1,205 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Student Helper Tool</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="christmas-styles.css" disabled>
-    <link href="https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&display=swap"
-        rel="stylesheet">
-    <script src="scripts.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>STARK – Student Task & Reminder Keeper</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;600&family=Mountains+of+Christmas:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="christmas-styles.css" />
 </head>
-
 <body>
-    <header>
-        <h1>STARK</h1>
-        <h2>Student Task And Reminder Keeper</h2>
-        <button id="theme-toggle" class="theme-toggle">
-            🌙 Dark Mode
-        </button>
-        <button id="christmas-theme-toggle" class="theme-toggle">
-            🎄 Christmas Mode
-        </button>
-    </header>
 
-    <!-- Motivation Thought Section -->
-    <div class="thought-container">
-        <div id="current-thought">Click arrow to select your motivation</div>
-        <div class="dropdown-arrow">▼</div>
-        <div class="thought-dropdown">
-            <div class="thought-option"
-                data-thought="Success is not final, failure is not fatal: it is the courage to continue that counts.">
-                Churchill
-                Quote</div>
-            <div class="thought-option"
-                data-thought="The future belongs to those who believe in the beauty of their dreams.">
-                Eleanor Roosevelt Quote</div>
-            <div class="thought-option" data-thought="It does not matter how slowly you go as long as you do not stop.">
-                Confucius Quote</div>
-            <div class="thought-option" data-thought="Believe you can and you're halfway there.">Theodore Roosevelt
-                Quote
-            </div>
-            <div class="thought-option" id="custom-thought">Custom Thought</div>
+  <!-- ── HEADER ── -->
+  <header id="main-header">
+    <div class="header-inner">
+      <div class="brand">
+        <span class="brand-logo">◈</span>
+        <div>
+          <h1>STARK</h1>
+          <p class="brand-sub">Student Task &amp; Reminder Keeper</p>
         </div>
+      </div>
+      <div class="header-controls">
+        <button id="theme-toggle" class="icon-btn" title="Toggle Dark Mode">🌙</button>
+        <button id="christmas-theme-toggle" class="icon-btn" title="Toggle Christmas Mode">🎄</button>
+      </div>
     </div>
+  </header>
 
+  <!-- ── MOTIVATION BANNER ── -->
+  <div class="motivation-bar">
+    <div class="motivation-inner">
+      <span id="current-thought">Click ▾ to choose your motivation</span>
+      <button class="dropdown-arrow" id="thought-toggle" aria-label="Open motivation picker">▾</button>
+    </div>
+    <div class="thought-dropdown" id="thought-dropdown">
+      <div class="thought-option" data-thought="Success is not final, failure is not fatal: it is the courage to continue that counts.">💬 Churchill</div>
+      <div class="thought-option" data-thought="The future belongs to those who believe in the beauty of their dreams.">💬 Eleanor Roosevelt</div>
+      <div class="thought-option" data-thought="It does not matter how slowly you go as long as you do not stop.">💬 Confucius</div>
+      <div class="thought-option" data-thought="Believe you can and you're halfway there.">💬 Theodore Roosevelt</div>
+      <div class="thought-option" id="custom-thought">✏️ Write your own…</div>
+    </div>
+  </div>
 
-    <section id="notes-section">
-        <h2>Notes</h2>
-        <div id="notes-container">
-            <!-- Notes will be dynamically added here -->
-        </div>
-        <button id="add-note-btn">Add Note</button>
+  <!-- ── MAIN GRID ── -->
+  <main class="grid">
+
+    <!-- NOTES -->
+    <section class="card" id="notes-section">
+      <div class="card-header">
+        <h2><span class="card-icon">📒</span> Notes</h2>
+        <button id="add-note-btn" class="btn-primary btn-sm">+ New Note</button>
+      </div>
+      <div id="notes-container" class="notes-grid">
+        <div class="empty-state">No notes yet — add your first one!</div>
+      </div>
     </section>
 
-    <!-- Add/Edit Note Popup -->
-    <div id="add-edit-popup" class="hidden">
-        <div class="popup-content">
-            <h3 id="popup-header">Add Note</h3>
-            <input type="text" id="note-title-input" placeholder="Enter title (required)" maxlength="50" />
-            <textarea id="note-content-input" placeholder="Enter content (max 200 characters)"
-                maxlength="200"></textarea>
-            <div class="popup-buttons">
-                <button id="save-note-btn">Save</button>
-                <button id="cancel-add-btn">Cancel</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- View/Edit Note Popup -->
-    <div id="view-popup" class="hidden">
-        <div class="popup-content">
-            <h3 id="view-popup-title"></h3>
-            <textarea id="view-popup-content" readonly></textarea>
-            <div class="note-timestamp" id="view-popup-timestamp"></div>
-            <div class="popup-buttons">
-                <button id="close-view-popup-btn">Close</button>
-            </div>
-        </div>
-    </div>
-
-
-
-    <!-- To-Do List Section -->
-    <section class="section" id="todo-section">
-        <h2>To-Do List</h2>
-        <div class="progress-bar">
-            <div class="progress" id="todo-progress"></div>
-        </div>
-        <form id="todo-form">
-            <!-- Change todo input placeholder -->
-            <input type="text" id="todo-input" placeholder="Enter a task or schedule..." maxlength="40" required>
-            <button type="submit">Add Task</button>
-        </form>
-        <h3>Pending Tasks</h3>
-        <ul id="todo-list"></ul>
+    <!-- TO-DO -->
+    <section class="card" id="todo-section">
+      <div class="card-header">
+        <h2><span class="card-icon">✅</span> To-Do</h2>
+        <span id="todo-counter" class="badge">0 / 0</span>
+      </div>
+      <div class="progress-wrap">
+        <div class="progress-bar"><div class="progress-fill" id="todo-progress"></div></div>
+        <span id="progress-label">0%</span>
+      </div>
+      <form id="todo-form" class="input-row">
+        <input type="text" id="todo-input" placeholder="Add a new task…" maxlength="60" autocomplete="off" required />
+        <button type="submit" class="btn-primary">Add</button>
+      </form>
+      <ul id="todo-list"></ul>
     </section>
 
-    <!-- Timer Section -->
-    <section class="section" id="timer-section">
-        <h2>Timer</h2>
-        <button id="start-timer">Start Timer</button>
-        <div id="timer-display">00:00</div>
-        <h3>Session Logs</h3>
-        <div id="timer-logs"></div>
+    <!-- TIMER -->
+    <section class="card" id="timer-section">
+      <div class="card-header">
+        <h2><span class="card-icon">⏱</span> Focus Timer</h2>
+      </div>
+      <div id="timer-display">00:00</div>
+      <div class="timer-controls">
+        <button id="start-timer" class="btn-primary">▶ Start</button>
+        <button id="reset-timer" class="btn-ghost">↺ Reset</button>
+      </div>
+      <h3 class="section-sub">Session Logs</h3>
+      <div id="timer-logs" class="logs-list"></div>
     </section>
 
-    <section class="section" id="calculator-section">
-        <h2>Calculator</h2>
-        <div class="calculator">
-            <input type="text" class="calculator-screen" value="0" disabled />
-            <div class="calculator-keys">
-                <!-- Row 1 -->
-                <button type="button" class="all-clear" value="all-clear">C</button>
-                <button type="button" class="operator" value="(">(</button>
-                <button type="button" class="operator" value=")">)</button>
-                <button type="button" class="operator" value="^">^</button>
-
-                <!-- Row 2 -->
-                <button type="button" value="7">7</button>
-                <button type="button" value="8">8</button>
-                <button type="button" value="9">9</button>
-                <button type="button" class="operator" value="/">&divide;</button>
-
-                <!-- Row 3 -->
-                <button type="button" value="4">4</button>
-                <button type="button" value="5">5</button>
-                <button type="button" value="6">6</button>
-                <button type="button" class="operator" value="*">&times;</button>
-
-                <!-- Row 4 -->
-                <button type="button" value="1">1</button>
-                <button type="button" value="2">2</button>
-                <button type="button" value="3">3</button>
-                <button type="button" class="operator" value="-">-</button>
-
-                <!-- Row 5 -->
-                <button type="button" value="0">0</button>
-                <button type="button" class="decimal" value=".">.</button>
-                <button type="button" class="operator" value="+">+</button>
-                <button type="button" class="equal-sign operator" value="=">=</button>
-            </div>
+    <!-- CALCULATOR -->
+    <section class="card" id="calculator-section">
+      <div class="card-header">
+        <h2><span class="card-icon">🧮</span> Calculator</h2>
+      </div>
+      <div class="calculator">
+        <div class="calc-screen">
+          <div class="calc-expr" id="calc-expr"></div>
+          <div class="calc-display" id="calc-display">0</div>
         </div>
+        <div class="calculator-keys">
+          <button class="calc-key span2 all-clear" data-action="clear">C</button>
+          <button class="calc-key operator" data-value="(">(</button>
+          <button class="calc-key operator" data-value=")">)</button>
+
+          <button class="calc-key" data-value="7">7</button>
+          <button class="calc-key" data-value="8">8</button>
+          <button class="calc-key" data-value="9">9</button>
+          <button class="calc-key operator" data-value="/">÷</button>
+
+          <button class="calc-key" data-value="4">4</button>
+          <button class="calc-key" data-value="5">5</button>
+          <button class="calc-key" data-value="6">6</button>
+          <button class="calc-key operator" data-value="*">×</button>
+
+          <button class="calc-key" data-value="1">1</button>
+          <button class="calc-key" data-value="2">2</button>
+          <button class="calc-key" data-value="3">3</button>
+          <button class="calc-key operator" data-value="-">−</button>
+
+          <button class="calc-key" data-value="0">0</button>
+          <button class="calc-key decimal" data-value=".">.</button>
+          <button class="calc-key operator" data-value="^">x^y</button>
+          <button class="calc-key operator" data-value="+">+</button>
+
+          <button class="calc-key equal-sign span4" data-action="equals">=</button>
+        </div>
+      </div>
     </section>
 
-    <div id="delete-confirm-popup" class="hidden">
-        <div class="popup-content">
-            <h3>Delete Note</h3>
-            <p>Are you sure you want to delete this note?</p>
-            <div class="popup-buttons">
-                <button id="confirm-delete-btn">Delete</button>
-                <button id="cancel-delete-btn">Cancel</button>
-            </div>
-        </div>
+  </main>
+
+  <!-- ── MODALS ── -->
+  <div class="overlay" id="overlay"></div>
+
+  <!-- Add / Edit Note -->
+  <div class="modal" id="add-edit-popup">
+    <div class="modal-content">
+      <h3 id="popup-header">New Note</h3>
+      <input type="text" id="note-title-input" placeholder="Title (required)" maxlength="50" autocomplete="off" />
+      <textarea id="note-content-input" placeholder="Content… (max 200 chars)" maxlength="200"></textarea>
+      <div class="char-count"><span id="content-char-count">0</span>/200</div>
+      <div class="modal-actions">
+        <button id="cancel-add-btn" class="btn-ghost">Cancel</button>
+        <button id="save-note-btn" class="btn-primary">Save Note</button>
+      </div>
     </div>
+  </div>
 
-    
+  <!-- View Note -->
+  <div class="modal" id="view-popup">
+    <div class="modal-content">
+      <h3 id="view-popup-title"></h3>
+      <textarea id="view-popup-content" readonly></textarea>
+      <div class="note-timestamp" id="view-popup-timestamp"></div>
+      <div class="modal-actions">
+        <button id="edit-from-view-btn" class="btn-ghost">✏️ Edit</button>
+        <button id="close-view-popup-btn" class="btn-primary">Close</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirm -->
+  <div class="modal" id="delete-confirm-popup">
+    <div class="modal-content modal-sm">
+      <h3>Delete Note?</h3>
+      <p id="delete-msg">This action cannot be undone.</p>
+      <div class="modal-actions">
+        <button id="cancel-delete-btn" class="btn-ghost">Cancel</button>
+        <button id="confirm-delete-btn" class="btn-danger">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Custom Thought -->
+  <div class="modal" id="custom-thought-popup">
+    <div class="modal-content modal-sm">
+      <h3>✏️ Your Motivation</h3>
+      <input type="text" id="custom-thought-input" placeholder="Enter your thought…" maxlength="120" />
+      <div class="modal-actions">
+        <button id="cancel-custom-thought-btn" class="btn-ghost">Cancel</button>
+        <button id="save-custom-thought-btn" class="btn-primary">Set Motivation</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Session Log -->
+  <div class="modal" id="session-popup">
+    <div class="modal-content modal-sm">
+      <h3 id="session-popup-title">⏱ Session Complete</h3>
+      <p id="session-duration-display"></p>
+      <input type="text" id="session-task-name" placeholder="What did you work on?" maxlength="40" />
+      <div class="modal-actions">
+        <button id="discard-session-btn" class="btn-ghost">Discard</button>
+        <button id="save-session-btn" class="btn-primary">Save Log</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Congrats Toast -->
+  <div id="toast" class="toast" aria-live="polite"></div>
+
+  <script src="scripts.js"></script>
 </body>
-
 </html>
